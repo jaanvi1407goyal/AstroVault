@@ -7,6 +7,81 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+
+  .modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 14, 26, 0.9);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal-content {
+  background: var(--deep);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: rgba(11, 14, 26, 0.7);
+  border: none;
+  color: var(--text-main);
+  font-size: 1.6rem;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 2;
+  line-height: 1;
+}
+
+.modal-close:hover { background: var(--error); }
+
+.modal-content img {
+  width: 100%;
+  max-height: 55vh;
+  object-fit: contain;
+  background: var(--void);
+  display: block;
+}
+
+.modal-body { padding: 28px 32px; }
+
+.modal-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.4rem;
+  margin-bottom: 14px;
+}
+
+.modal-desc {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 22px;
+  white-space: pre-line;
+}
+
+/* Make result card images clearly clickable */
+.result-card img { cursor: pointer; }
+
+.result-card {
+  cursor: pointer;
+}
+
+
   :root {
     --void: #0b0e1a;
     --deep: #131a2e;
@@ -187,11 +262,24 @@
   <div class="results-grid" id="resultsGrid"></div>
 </main>
 
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-content">
+    <button class="modal-close" id="modalClose">&times;</button>
+    <img id="modalImage" src="" alt="">
+    <div class="modal-body">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <button class="save-btn" id="modalSaveBtn">Save to Vault</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const searchInput = document.getElementById('searchInput');
   const searchBtn = document.getElementById('searchBtn');
   const statusText = document.getElementById('statusText');
   const resultsGrid = document.getElementById('resultsGrid');
+  let currentResults = []; // holds the full search results so the modal can access untruncated data
 
   async function runSearch() {
     const query = searchInput.value.trim();
@@ -213,19 +301,21 @@
       }
 
       statusText.textContent = `Found ${data.count} results for "${query}"`;
+currentResults = data.results; // save full data for the modal to use
 
-      resultsGrid.innerHTML = data.results.map((item, index) => `
-        <div class="result-card">
-          <img src="${item.image_url}" alt="${item.title}">
-          <div class="result-body">
-            <div class="result-title">${item.title}</div>
-            <div class="result-desc">${item.description || 'No description available.'}</div>
-            <button class="save-btn" onclick='saveObject(${JSON.stringify(item.title)}, ${JSON.stringify(item.image_url)})'>
-              Save to Vault
-            </button>
-          </div>
-        </div>
-      `).join('');
+resultsGrid.innerHTML = data.results.map((item, index) => `
+  <div class="result-card" onclick="openModal(${index})">
+    <img src="${item.image_url}" alt="${item.title}">
+    <div class="result-body">
+      <div class="result-title">${item.title}</div>
+      <div class="result-desc">${item.description || 'No description available.'}</div>
+      <button class="save-btn" onclick='event.stopPropagation(); saveObject(${JSON.stringify(item.title)}, ${JSON.stringify(item.image_url)})'>
+        Save to Vault
+      </button>
+    </div>
+  </div>
+`).join('');
+
 
     } catch (error) {
       statusText.textContent = 'Something went wrong. Make sure your server is running.';
@@ -265,6 +355,29 @@
       alert('Could not save: ' + error.message);
     }
   }
+
+  function openModal(index) {
+  const item = currentResults[index];
+  document.getElementById('modalImage').src = item.image_url;
+  document.getElementById('modalImage').alt = item.title;
+  document.getElementById('modalTitle').textContent = item.title;
+  document.getElementById('modalDesc').textContent = item.description || 'No description available.';
+
+  const saveBtn = document.getElementById('modalSaveBtn');
+  saveBtn.onclick = () => saveObject(item.title, item.image_url);
+
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  // only close if clicking the dark overlay itself, not the content inside it
+  if (e.target.id === 'modalOverlay') closeModal();
+});
 
   searchBtn.addEventListener('click', runSearch);
   searchInput.addEventListener('keydown', (e) => {
