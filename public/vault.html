@@ -7,6 +7,130 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  .vault-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 14, 26, 0.9);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+.vault-modal-overlay.active { display: flex; }
+
+.vault-modal-content {
+  background: var(--deep);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.vault-modal-content .modal-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: rgba(11, 14, 26, 0.7);
+  border: none;
+  color: var(--text-main);
+  font-size: 1.6rem;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 2;
+  line-height: 1;
+}
+
+.vault-modal-content .modal-close:hover { background: var(--error); }
+
+.vault-modal-content img {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.vault-modal-body { padding: 28px 32px; }
+
+.vault-modal-type {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--nebula);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.vault-modal-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.vault-modal-date {
+  color: var(--text-muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  margin-bottom: 24px;
+}
+
+.vault-modal-section-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+.vault-modal-desc {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+#vaultModalNote {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px 14px;
+  background: var(--void);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+
+#vaultModalSaveNote {
+  padding: 10px 22px;
+  background: var(--gold);
+  color: var(--void);
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.note-status {
+  display: inline-block;
+  margin-left: 14px;
+  color: var(--gold);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+}
+
+.vault-card { cursor: pointer; }
+
   :root {
     --void: #0b0e1a;
     --deep: #131a2e;
@@ -236,7 +360,84 @@
   </div>
 </main>
 
+<div class="vault-modal-overlay" id="vaultModalOverlay">
+  <div class="vault-modal-content">
+    <button class="modal-close" id="vaultModalClose">&times;</button>
+    <img id="vaultModalImage" src="" alt="">
+    <div class="vault-modal-body">
+      <div class="vault-modal-type" id="vaultModalType"></div>
+      <div class="vault-modal-title" id="vaultModalTitle"></div>
+      <div class="vault-modal-date" id="vaultModalDate"></div>
+
+      <div class="vault-modal-section-label">Description</div>
+      <div class="vault-modal-desc" id="vaultModalDesc"></div>
+
+      <div class="vault-modal-section-label">My Notes</div>
+      <textarea id="vaultModalNote" placeholder="Write your thoughts, observations, or facts about this object..."></textarea>
+      <button id="vaultModalSaveNote">Save Note</button>
+      <div class="note-status" id="noteStatus"></div>
+    </div>
+  </div>
+</div>
+
 <script>
+
+function openVaultModal(index) {
+  const obj = window.currentVaultObjects[index];
+
+  document.getElementById('vaultModalImage').src = obj.nasa_image_url || '';
+  document.getElementById('vaultModalImage').style.display = obj.nasa_image_url ? 'block' : 'none';
+  document.getElementById('vaultModalType').textContent = obj.object_type;
+  document.getElementById('vaultModalTitle').textContent = obj.object_name;
+  document.getElementById('vaultModalDate').textContent = 'Saved on ' + new Date(obj.saved_at).toLocaleDateString();
+  document.getElementById('vaultModalDesc').textContent = obj.description || 'No description available.';
+  document.getElementById('vaultModalNote').value = obj.personal_note || '';
+  document.getElementById('noteStatus').textContent = '';
+
+  // Remember which object's note we're editing, so Save knows the right ID
+  document.getElementById('vaultModalSaveNote').dataset.objectId = obj.id;
+
+  document.getElementById('vaultModalOverlay').classList.add('active');
+}
+
+function closeVaultModal() {
+  document.getElementById('vaultModalOverlay').classList.remove('active');
+}
+
+document.getElementById('vaultModalClose').addEventListener('click', closeVaultModal);
+document.getElementById('vaultModalOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'vaultModalOverlay') closeVaultModal();
+});
+
+document.getElementById('vaultModalSaveNote').addEventListener('click', async function() {
+  const objectId = this.dataset.objectId;
+  const note = document.getElementById('vaultModalNote').value;
+  const statusEl = document.getElementById('noteStatus');
+
+  try {
+    const res = await fetch(`/api/vault/${objectId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ personal_note: note })
+    });
+
+    if (!res.ok) throw new Error('Failed to save');
+
+    statusEl.textContent = 'Saved!';
+    setTimeout(() => { statusEl.textContent = ''; }, 2000);
+
+    // Update our local copy too, so it's correct if the modal is reopened without a full page refresh
+    const obj = window.currentVaultObjects.find(o => o.id == objectId);
+    if (obj) obj.personal_note = note;
+
+  } catch (error) {
+    statusEl.textContent = 'Failed to save.';
+  }
+});
+
   const token = localStorage.getItem('astrovault_token');
   const user = JSON.parse(localStorage.getItem('astrovault_user') || 'null');
 
@@ -278,15 +479,17 @@
         return;
       }
 
-      grid.innerHTML = data.objects.map(obj => `
-        <div class="vault-card">
-          ${obj.nasa_image_url ? `<img src="${obj.nasa_image_url}" alt="${obj.object_name}">` : ''}
-          <div class="vault-card-body">
-            <div class="vault-card-title">${obj.object_name}</div>
-            <div class="vault-card-type">${obj.object_type}</div>
-          </div>
-        </div>
-      `).join('');
+      window.currentVaultObjects = data.objects; // store full data so the modal can access it
+
+grid.innerHTML = data.objects.map((obj, index) => `
+  <div class="vault-card" onclick="openVaultModal(${index})">
+    ${obj.nasa_image_url ? `<img src="${obj.nasa_image_url}" alt="${obj.object_name}">` : ''}
+    <div class="vault-card-body">
+      <div class="vault-card-title">${obj.object_name}</div>
+      <div class="vault-card-type">${obj.object_type}</div>
+    </div>
+  </div>
+`).join('');
 
     } catch (error) {
       grid.innerHTML = `<div class="empty-state">Couldn't load your vault. Make sure your server is running.</div>`;

@@ -290,10 +290,10 @@
     resultsGrid.innerHTML = '';
 
     try {
-      // Appending " planet" is a small trick that improves NASA's search results,
-      // since a bare word like "mars" pulls in a lot of unrelated matches
       const res = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
       const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || 'Search failed');
 
       if (data.results.length === 0) {
         statusText.textContent = `No results found for "${query}".`;
@@ -301,21 +301,20 @@
       }
 
       statusText.textContent = `Found ${data.count} results for "${query}"`;
-currentResults = data.results; // save full data for the modal to use
+      currentResults = data.results; // save full data for the modal to use
 
-resultsGrid.innerHTML = data.results.map((item, index) => `
-  <div class="result-card" onclick="openModal(${index})">
-    <img src="${item.image_url}" alt="${item.title}">
-    <div class="result-body">
-      <div class="result-title">${item.title}</div>
-      <div class="result-desc">${item.description || 'No description available.'}</div>
-      <button class="save-btn" onclick='event.stopPropagation(); saveObject(${JSON.stringify(item.title)}, ${JSON.stringify(item.image_url)})'>
-        Save to Vault
-      </button>
-    </div>
-  </div>
-`).join('');
-
+      resultsGrid.innerHTML = data.results.map((item, index) => `
+        <div class="result-card" onclick="openModal(${index})">
+          <img src="${item.image_url}" alt="${item.title}">
+          <div class="result-body">
+            <div class="result-title">${item.title}</div>
+            <div class="result-desc">${item.description || 'No description available.'}</div>
+            <button class="save-btn" onclick='event.stopPropagation(); saveObject(${JSON.stringify(item.title)}, ${JSON.stringify(item.image_url)}, ${JSON.stringify(item.description)})'>
+              Save to Vault
+            </button>
+          </div>
+        </div>
+      `).join('');
 
     } catch (error) {
       statusText.textContent = 'Something went wrong. Make sure your server is running.';
@@ -324,7 +323,7 @@ resultsGrid.innerHTML = data.results.map((item, index) => `
     }
   }
 
-  async function saveObject(name, imageUrl) {
+  async function saveObject(name, imageUrl, description) {
     const token = localStorage.getItem('astrovault_token');
 
     if (!token) {
@@ -343,7 +342,8 @@ resultsGrid.innerHTML = data.results.map((item, index) => `
         body: JSON.stringify({
           object_name: name,
           object_type: 'search_result',
-          nasa_image_url: imageUrl
+          nasa_image_url: imageUrl,
+          description: description
         })
       });
 
@@ -357,27 +357,26 @@ resultsGrid.innerHTML = data.results.map((item, index) => `
   }
 
   function openModal(index) {
-  const item = currentResults[index];
-  document.getElementById('modalImage').src = item.image_url;
-  document.getElementById('modalImage').alt = item.title;
-  document.getElementById('modalTitle').textContent = item.title;
-  document.getElementById('modalDesc').textContent = item.description || 'No description available.';
+    const item = currentResults[index];
+    document.getElementById('modalImage').src = item.image_url;
+    document.getElementById('modalImage').alt = item.title;
+    document.getElementById('modalTitle').textContent = item.title;
+    document.getElementById('modalDesc').textContent = item.description || 'No description available.';
 
-  const saveBtn = document.getElementById('modalSaveBtn');
-  saveBtn.onclick = () => saveObject(item.title, item.image_url);
+    const saveBtn = document.getElementById('modalSaveBtn');
+    saveBtn.onclick = () => saveObject(item.title, item.image_url, item.description);
 
-  document.getElementById('modalOverlay').classList.add('active');
-}
+    document.getElementById('modalOverlay').classList.add('active');
+  }
 
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('active');
-}
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+  }
 
-document.getElementById('modalClose').addEventListener('click', closeModal);
-document.getElementById('modalOverlay').addEventListener('click', (e) => {
-  // only close if clicking the dark overlay itself, not the content inside it
-  if (e.target.id === 'modalOverlay') closeModal();
-});
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'modalOverlay') closeModal();
+  });
 
   searchBtn.addEventListener('click', runSearch);
   searchInput.addEventListener('keydown', (e) => {
