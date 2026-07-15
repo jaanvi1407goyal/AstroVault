@@ -2,9 +2,13 @@ const getTonightSky = async (req, res) => {
   try {
     // Get the visitor's real IP address from request headers
     // (Railway and most hosts pass this via x-forwarded-for)
-    const visitorIP = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+    const visitorIP = req.headers['x-forwarded-for']?.split(',')[0];
 
-    const locationResponse = await fetch(`http://ip-api.com/json/${visitorIP}`);
+// If there's no real forwarded IP (e.g. local testing), let ip-api auto-detect
+// instead of passing a useless local address like ::1 or 127.0.0.1
+const locationResponse = await fetch(
+  visitorIP ? `http://ip-api.com/json/${visitorIP}` : 'http://ip-api.com/json/'
+);
     const location = await locationResponse.json();
 
     const { lat, lon, city, country } = location;

@@ -7,7 +7,9 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://astrovault-production.up.railway.app'
+}));
 app.use(express.json());
 app.use(express.static('public'));
 const authRoutes = require('./routes/authRoutes');
