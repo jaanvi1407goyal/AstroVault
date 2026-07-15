@@ -268,7 +268,7 @@
   async function loadVault() {
     const grid = document.getElementById('vaultGrid');
     try {
-      const res = await fetch('http://localhost:3000/api/vault', {
+      const res = await fetch('/api/vault', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -297,7 +297,7 @@
   async function loadJournal() {
     const list = document.getElementById('journalList');
     try {
-      const res = await fetch('http://localhost:3000/api/journal', {
+      const res = await fetch('/api/journal', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();

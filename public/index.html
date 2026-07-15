@@ -343,7 +343,7 @@
   // ---------- Fetch today's APOD from our backend ----------
   async function loadAPOD() {
     try {
-      const res = await fetch('http://localhost:3000/api/apod');
+      const res = await fetch('/api/apod');
       const data = await res.json();
 
       document.getElementById('apodCard').innerHTML = `

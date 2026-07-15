@@ -204,7 +204,7 @@
     try {
       // Appending " planet" is a small trick that improves NASA's search results,
       // since a bare word like "mars" pulls in a lot of unrelated matches
-      const res = await fetch(`http://localhost:3000/api/search?query=${encodeURIComponent(query)}`);
+      const res = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
       const data = await res.json();
 
       if (data.results.length === 0) {
@@ -244,7 +244,7 @@
     }
 
     try {
-      const res = await fetch('http://localhost:3000/api/vault', {
+      const res = await fetch('/api/vault', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

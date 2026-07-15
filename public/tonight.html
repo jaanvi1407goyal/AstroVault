@@ -153,7 +153,7 @@
     const skyContent = document.getElementById('skyContent');
 
     try {
-      const res = await fetch('http://localhost:3000/api/tonight-sky');
+      const res = await fetch('/api/tonight-sky');
       const data = await res.json();
 
       locationLine.textContent = `${data.location.city}, ${data.location.country}`;
