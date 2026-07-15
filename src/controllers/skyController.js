@@ -1,7 +1,10 @@
 const getTonightSky = async (req, res) => {
   try {
-    // Step A: Get user's approximate location from their IP address
-    const locationResponse = await fetch('http://ip-api.com/json/');
+    // Get the visitor's real IP address from request headers
+    // (Railway and most hosts pass this via x-forwarded-for)
+    const visitorIP = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+
+    const locationResponse = await fetch(`http://ip-api.com/json/${visitorIP}`);
     const location = await locationResponse.json();
 
     const { lat, lon, city, country } = location;
