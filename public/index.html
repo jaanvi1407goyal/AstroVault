@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AstroVault — Your Personal Window to the Universe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    nav, .hero-content, .apod-section, .features, footer {
+  position: relative;
+  z-index: 1;
+}
+  :root {
+    --void: #0b0e1a;
+    --deep: #131a2e;
+    --gold: #e8c468;
+    --nebula: #8b7ff0;
+    --text-main: #f1ede4;
+    --text-muted: #8b92ab;
+    --line: rgba(241, 237, 228, 0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--void);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+  }
+
+  /* ---------- NAV ---------- */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 6vw;
+    position: relative;
+    z-index: 10;
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+  }
+
+  .nav-links a:hover, .nav-links a:focus-visible {
+    color: var(--gold);
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    min-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 6vw;
+    overflow: hidden;
+  }
+
+ #starfield {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
+
+  .hero-content { position: relative; z-index: 2; max-width: 720px; }
+
+  .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: inline-block;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    line-height: 1.15;
+    margin-bottom: 20px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    max-width: 520px;
+    margin: 0 auto 36px;
+  }
+
+  .cta-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+  .btn {
+    padding: 14px 28px;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    display: inline-block;
+  }
+
+  .btn-primary { background: var(--gold); color: var(--void); }
+  .btn-secondary { border: 1px solid var(--line); color: var(--text-main); }
+
+  .btn:hover, .btn:focus-visible { transform: translateY(-2px); }
+
+  /* ---------- APOD SECTION ---------- */
+  .apod-section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 60px 6vw 100px;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--nebula);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .apod-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--deep);
+  }
+
+  .apod-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    min-height: 320px;
+  }
+
+  .apod-text { padding: 36px; display: flex; flex-direction: column; justify-content: center; }
+
+  .apod-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .apod-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    margin-bottom: 14px;
+  }
+
+  .apod-desc {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+
+  .loading-state {
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+    padding: 60px;
+    text-align: center;
+    grid-column: 1 / -1;
+  }
+
+  /* ---------- FEATURES ---------- */
+  .features {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 6vw 120px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+
+  .feature-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 32px 28px;
+  }
+
+  .feature-icon {
+    font-family: 'Space Mono', monospace;
+    color: var(--gold);
+    font-size: 0.85rem;
+    margin-bottom: 18px;
+  }
+
+  .feature-card h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+
+  .feature-card p {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+
+  footer {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .apod-card { grid-template-columns: 1fr; }
+    .features { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<canvas id="starfield"></canvas>
+<nav>
+  <div class="logo">AstroVault</div>
+  <ul class="nav-links">
+    <li><a href="search.html">Search</a></li>
+    <li><a href="tonight.html">Tonight's Sky</a></li>
+    <li><a href="vault.html">My Vault</a></li>
+    <li><a href="login.html">Log In</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  
+  <div class="hero-content">
+    <span class="eyebrow">Observatory Log — Est. 2026</span>
+    <h1>Keep a <em>journal</em> of everything you discover in the sky</h1>
+    <p>Search real NASA imagery, track tonight's moon and the ISS from your exact location, and save what you find to your own personal vault.</p>
+    <div class="cta-row">
+      <a href="search.html" class="btn btn-primary">Start Exploring</a>
+      <a href="register.html" class="btn btn-secondary">Create Account</a>
+    </div>
+  </div>
+</section>
+
+<section class="apod-section">
+  <div class="section-label">Today's Sky</div>
+  <div class="apod-card" id="apodCard">
+    <div class="loading-state">Loading today's picture...</div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="feature-card">
+    <div class="feature-icon">01 / SEARCH</div>
+    <h3>Explore any object</h3>
+    <p>Search planets, stars, and nebulae and pull real images straight from NASA's archive.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">02 / TONIGHT</div>
+    <h3>See tonight's sky</h3>
+    <p>Get sunrise, sunset, moon phase, and the live position of the ISS based on your location.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">03 / VAULT</div>
+    <h3>Save what you find</h3>
+    <p>Build a personal collection of saved objects and write journal entries about what you've observed.</p>
+  </div>
+</section>
+
+<footer>AstroVault — a personal space journal</footer>
+
+<script>
+  // ---------- Starfield background animation ----------
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    stars = Array.from({ length: 150 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.4 + 0.3,
+      opacity: Math.random(),
+      speed: Math.random() * 0.015
+    }));
+  }
+
+  function drawStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(star => {
+      star.opacity += star.speed;
+      const twinkle = Math.abs(Math.sin(star.opacity));
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(241, 237, 228, ${twinkle})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(drawStars);
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+  drawStars();
+
+  // ---------- Fetch today's APOD from our backend ----------
+  async function loadAPOD() {
+    try {
+      const res = await fetch('http://localhost:3000/api/apod');
+      const data = await res.json();
+
+      document.getElementById('apodCard').innerHTML = `
+        <img src="${data.image_url}" alt="${data.title}">
+        <div class="apod-text">
+          <div class="apod-date">${data.date}</div>
+          <div class="apod-title">${data.title}</div>
+          <div class="apod-desc">${data.explanation}</div>
+        </div>
+      `;
+    } catch (error) {
+      document.getElementById('apodCard').innerHTML = `
+        <div class="loading-state">Couldn't load today's picture. Make sure your server is running.</div>
+      `;
+    }
+  }
+
+  loadAPOD();
+</script>
+
+</body>
+</html>

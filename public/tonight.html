@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tonight's Sky — AstroVault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #0b0e1a;
+    --deep: #131a2e;
+    --gold: #e8c468;
+    --nebula: #8b7ff0;
+    --text-main: #f1ede4;
+    --text-muted: #8b92ab;
+    --line: rgba(241, 237, 228, 0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--void);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 6vw;
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text-main);
+  }
+
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.95rem; }
+  .nav-links a:hover { color: var(--gold); }
+
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 6vw 100px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 2.2rem;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .location-line {
+    text-align: center;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+    margin-bottom: 50px;
+  }
+
+  .sky-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .sky-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--deep);
+    padding: 28px;
+  }
+
+  .sky-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--nebula);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .sky-value {
+    font-family: 'Fraunces', serif;
+    font-size: 1.6rem;
+    margin-bottom: 6px;
+  }
+
+  .sky-sub {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .iss-card {
+    grid-column: 1 / -1;
+  }
+
+  .coords-row {
+    display: flex;
+    gap: 40px;
+    margin-top: 10px;
+  }
+
+  .coord-block { font-family: 'Space Mono', monospace; }
+  .coord-block .sky-sub { margin-bottom: 4px; }
+
+  .status-text {
+    text-align: center;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    padding: 60px;
+  }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .sky-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">AstroVault</a>
+  <ul class="nav-links">
+    <li><a href="search.html">Search</a></li>
+    <li><a href="tonight.html">Tonight's Sky</a></li>
+    <li><a href="vault.html">My Vault</a></li>
+    <li><a href="login.html">Log In</a></li>
+  </ul>
+</nav>
+
+<main>
+  <h1>Tonight's Sky</h1>
+  <div class="location-line" id="locationLine">Detecting your location...</div>
+
+  <div id="skyContent">
+    <div class="status-text">Loading sky data...</div>
+  </div>
+</main>
+
+<script>
+  async function loadSky() {
+    const locationLine = document.getElementById('locationLine');
+    const skyContent = document.getElementById('skyContent');
+
+    try {
+      const res = await fetch('http://localhost:3000/api/tonight-sky');
+      const data = await res.json();
+
+      locationLine.textContent = `${data.location.city}, ${data.location.country}`;
+
+      // Format ISO datetime strings like "2026-07-14T04:52" into just "04:52"
+      const formatTime = (isoString) => isoString.split('T')[1];
+
+      skyContent.innerHTML = `
+        <div class="sky-grid">
+          <div class="sky-card">
+            <div class="sky-label">Sunrise</div>
+            <div class="sky-value">${formatTime(data.sun.sunrise)}</div>
+            <div class="sky-sub">Local time</div>
+          </div>
+
+          <div class="sky-card">
+            <div class="sky-label">Sunset</div>
+            <div class="sky-value">${formatTime(data.sun.sunset)}</div>
+            <div class="sky-sub">Local time</div>
+          </div>
+
+          <div class="sky-card">
+            <div class="sky-label">Moon Phase</div>
+            <div class="sky-value">${data.moon.phase}</div>
+            <div class="sky-sub">${data.moon.fracillum} illuminated</div>
+          </div>
+
+          <div class="sky-card">
+            <div class="sky-label">Your Location</div>
+            <div class="sky-value">${data.location.lat.toFixed(2)}, ${data.location.lon.toFixed(2)}</div>
+            <div class="sky-sub">Latitude, Longitude</div>
+          </div>
+
+          <div class="sky-card iss-card">
+            <div class="sky-label">International Space Station — Live Position</div>
+            <div class="coords-row">
+              <div class="coord-block">
+                <div class="sky-sub">Latitude</div>
+                <div class="sky-value" style="font-size: 1.2rem;">${parseFloat(data.iss.latitude).toFixed(2)}°</div>
+              </div>
+              <div class="coord-block">
+                <div class="sky-sub">Longitude</div>
+                <div class="sky-value" style="font-size: 1.2rem;">${parseFloat(data.iss.longitude).toFixed(2)}°</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+    } catch (error) {
+      skyContent.innerHTML = `<div class="status-text">Couldn't load sky data. Make sure your server is running.</div>`;
+      locationLine.textContent = '';
+    }
+  }
+
+  loadSky();
+</script>
+
+</body>
+</html>

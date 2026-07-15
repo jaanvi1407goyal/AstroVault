@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log In — AstroVault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #0b0e1a;
+    --deep: #131a2e;
+    --gold: #e8c468;
+    --nebula: #8b7ff0;
+    --text-main: #f1ede4;
+    --text-muted: #8b92ab;
+    --line: rgba(241, 237, 228, 0.12);
+    --error: #e88a68;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--void);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .auth-card {
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--deep);
+    padding: 40px 36px;
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    text-align: center;
+    display: block;
+    text-decoration: none;
+    color: var(--text-main);
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 28px;
+    color: var(--text-muted);
+  }
+
+  label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    margin-top: 18px;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--void);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  button {
+    width: 100%;
+    margin-top: 28px;
+    padding: 13px;
+    background: var(--gold);
+    color: var(--void);
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  button:hover { opacity: 0.9; }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .message {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    text-align: center;
+    display: none;
+  }
+
+  .message.error { color: var(--error); display: block; }
+  .message.success { color: var(--gold); display: block; }
+
+  .switch-link {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+
+  .switch-link a { color: var(--gold); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="auth-card">
+  <a href="index.html" class="logo">AstroVault</a>
+  <h1>Welcome back</h1>
+
+  <form id="loginForm">
+    <label for="email">Email</label>
+    <input type="email" id="email" required>
+
+    <label for="password">Password</label>
+    <input type="password" id="password" required>
+
+    <button type="submit" id="submitBtn">Log In</button>
+
+    <div class="message" id="message"></div>
+  </form>
+
+  <div class="switch-link">
+    Don't have an account? <a href="register.html">Create one</a>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('loginForm');
+  const messageBox = document.getElementById('message');
+  const submitBtn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Logging in...';
+    messageBox.className = 'message';
+
+    try {
+      const res = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Save the token + user info in the browser so other pages can use it
+      localStorage.setItem('astrovault_token', data.token);
+      localStorage.setItem('astrovault_user', JSON.stringify(data.user));
+
+      messageBox.textContent = 'Login successful! Redirecting...';
+      messageBox.className = 'message success';
+
+      setTimeout(() => {
+        window.location.href = 'vault.html';
+      }, 1000);
+
+    } catch (error) {
+      messageBox.textContent = error.message;
+      messageBox.className = 'message error';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Log In';
+    }
+  });
+</script>
+
+</body>
+</html>
