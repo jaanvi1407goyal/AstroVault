@@ -416,7 +416,7 @@ function spawnShootingStar() {
 }
 
 function scheduleShootingStars() {
-  const delay = 4000 + Math.random() * 6000; // every 4-10 seconds, randomly
+  const delay = 1500 + Math.random() * 2500; // every 4-10 seconds, randomly
   setTimeout(() => {
     spawnShootingStar();
     scheduleShootingStars();
