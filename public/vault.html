@@ -469,9 +469,10 @@ document.getElementById('vaultModalSaveNote').addEventListener('click', async fu
   async function loadVault() {
     const grid = document.getElementById('vaultGrid');
     try {
-      const res = await fetch('/api/vault', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+     const res = await fetch('/api/vault', {
+  headers: { 'Authorization': `Bearer ${token}` },
+  cache: 'no-store'
+});
       const data = await res.json();
 
       if (data.objects.length === 0) {
@@ -498,11 +499,12 @@ grid.innerHTML = data.objects.map((obj, index) => `
 
   // ---------- Load journal entries ----------
   async function loadJournal() {
-    const list = document.getElementById('journalList');
-    try {
-      const res = await fetch('/api/journal', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+  const list = document.getElementById('journalList');
+  try {
+    const res = await fetch('/api/journal', {
+      headers: { 'Authorization': `Bearer ${token}` },
+      cache: 'no-store'
+    });
       const data = await res.json();
 
       if (data.entries.length === 0) {
