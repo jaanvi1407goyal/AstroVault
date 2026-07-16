@@ -7,6 +7,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  nav, main {
+  position: relative;
+  z-index: 1;
+}
+  #starfield {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
   .vault-modal-overlay {
   display: none;
   position: fixed;
@@ -322,7 +334,7 @@
 </style>
 </head>
 <body>
-
+<canvas id="starfield"></canvas>
 <nav>
   <a href="index.html" class="logo">AstroVault</a>
   <ul class="nav-links">
@@ -380,6 +392,39 @@
 </div>
 
 <script>
+  // ---------- Starfield background animation ----------
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+let stars = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  stars = Array.from({ length: 150 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.4 + 0.3,
+    opacity: Math.random(),
+    speed: Math.random() * 0.015
+  }));
+}
+
+function drawStars() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(star => {
+    star.opacity += star.speed;
+    const twinkle = Math.abs(Math.sin(star.opacity));
+    ctx.beginPath();
+    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(241, 237, 228, ${twinkle})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+drawStars();
 function renderAuthNav() {
   const navItem = document.getElementById('authNavItem');
   navItem.innerHTML = `<button id="navLogoutBtn" style="background:transparent;border:1px solid var(--line);color:var(--text-muted);padding:8px 16px;border-radius:4px;font-size:0.85rem;cursor:pointer;">Log Out</button>`;
