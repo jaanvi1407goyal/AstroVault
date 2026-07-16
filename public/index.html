@@ -261,7 +261,7 @@
     <li><a href="search.html">Search</a></li>
     <li><a href="tonight.html">Tonight's Sky</a></li>
     <li><a href="vault.html">My Vault</a></li>
-    <li><a href="login.html">Log In</a></li>
+    <li id="authNavItem"></li>
   </ul>
 </nav>
 
@@ -306,6 +306,26 @@
 <footer>AstroVault — a personal space journal</footer>
 
 <script>
+
+  // ---------- Dynamic Log In / Log Out nav button ----------
+function renderAuthNav() {
+  const token = localStorage.getItem('astrovault_token');
+  const user = JSON.parse(localStorage.getItem('astrovault_user') || 'null');
+  const navItem = document.getElementById('authNavItem');
+
+  if (token && user) {
+    navItem.innerHTML = `<button id="navLogoutBtn" style="background:transparent;border:1px solid var(--line);color:var(--text-muted);padding:8px 16px;border-radius:4px;font-size:0.85rem;cursor:pointer;">Log Out</button>`;
+    document.getElementById('navLogoutBtn').addEventListener('click', () => {
+      localStorage.clear();
+      window.location.href = 'index.html';
+    });
+  } else {
+    navItem.innerHTML = `<a href="login.html">Log In</a>`;
+  }
+}
+
+renderAuthNav();
+
   // ---------- Starfield background animation ----------
   const canvas = document.getElementById('starfield');
   const ctx = canvas.getContext('2d');

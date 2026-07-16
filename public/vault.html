@@ -328,8 +328,7 @@
   <ul class="nav-links">
     <li><a href="search.html">Search</a></li>
     <li><a href="tonight.html">Tonight's Sky</a></li>
-    <li id="usernameDisplay"></li>
-    <li><button id="logoutBtn">Log Out</button></li>
+    <li id="authNavItem"></li>
   </ul>
 </nav>
 
@@ -381,7 +380,14 @@
 </div>
 
 <script>
-
+function renderAuthNav() {
+  const navItem = document.getElementById('authNavItem');
+  navItem.innerHTML = `<button id="navLogoutBtn" style="background:transparent;border:1px solid var(--line);color:var(--text-muted);padding:8px 16px;border-radius:4px;font-size:0.85rem;cursor:pointer;">Log Out</button>`;
+  document.getElementById('navLogoutBtn').addEventListener('click', () => {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  });
+}
 function openVaultModal(index) {
   const obj = window.currentVaultObjects[index];
 
@@ -447,13 +453,7 @@ document.getElementById('vaultModalSaveNote').addEventListener('click', async fu
   }
 
   document.getElementById('welcomeLine').textContent = `Logged in as ${user.username}`;
-  document.getElementById('usernameDisplay').textContent = user.username;
-
-  // ---------- Logout ----------
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    localStorage.clear();
-    window.location.href = 'index.html';
-  });
+renderAuthNav();
 
   // ---------- Tab switching ----------
   document.querySelectorAll('.tab-btn').forEach(btn => {
