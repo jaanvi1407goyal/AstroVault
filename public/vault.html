@@ -538,7 +538,7 @@ grid.innerHTML = data.objects.map((obj, index) => `
     }
 
     try {
-      const res = await fetch('http://localhost:3000/api/journal', {
+      const res = await fetch('/api/journal', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
